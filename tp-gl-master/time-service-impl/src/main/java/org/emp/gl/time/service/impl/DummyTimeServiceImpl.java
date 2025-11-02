@@ -5,9 +5,8 @@
  */
 package org.emp.gl.time.service.impl;
 
+import java.beans.PropertyChangeSupport;
 import java.time.LocalTime;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -18,14 +17,13 @@ import org.emp.gl.timer.service.TimerService;
  *
  * @author tina
  */
-public class DummyTimeServiceImpl
-        implements TimerService {
+public class DummyTimeServiceImpl implements TimerService {
 
     int dixiemeDeSeconde;
     int minutes;
     int secondes;
     int heures;
-    List<TimerChangeListener> listeners = new LinkedList<>();
+    PropertyChangeSupport propertyChangeSupport;
 
     /**
      * Constructeur du DummyTimeServiceImpl: ici, 
@@ -33,6 +31,7 @@ public class DummyTimeServiceImpl
      * réaliser des tics à chaque N millisecondes
      */
     public DummyTimeServiceImpl() {
+        this.propertyChangeSupport = new PropertyChangeSupport(this);
         setTimeValues();
         // initialize schedular
         Timer timer = new Timer();
@@ -54,19 +53,14 @@ public class DummyTimeServiceImpl
         setDixiemeDeSeconde(localTime.getNano() / 100000000);
     }
 
-   
-
-
     @Override
     public void addTimeChangeListener(TimerChangeListener pl) {
-        // TODO
-        listeners.add(pl) ;
+        propertyChangeSupport.addPropertyChangeListener(pl);
     }
 
     @Override
     public void removeTimeChangeListener(TimerChangeListener pl) {
-        // TODO
-        listeners.remove(pl) ;
+        propertyChangeSupport.removePropertyChangeListener(pl);
     }
 
     private void timeChanged() {
@@ -80,17 +74,10 @@ public class DummyTimeServiceImpl
         int oldValue = dixiemeDeSeconde;
         dixiemeDeSeconde = newDixiemeDeSeconde;
 
-        // informer les listeners !
-        dixiemeDeSecondesChanged(oldValue, dixiemeDeSeconde);
-    }
-
-    private void dixiemeDeSecondesChanged(int oldValue, int newValue) {
-       for (TimerChangeListener l : listeners) {
-           l.propertyChange(TimerChangeListener.DIXEME_DE_SECONDE_PROP,
+        // informer les listeners avec PropertyChangeSupport !
+        propertyChangeSupport.firePropertyChange(TimerChangeListener.DIXEME_DE_SECONDE_PROP,
                    oldValue, dixiemeDeSeconde);
-       }
     }
-
 
     public void setSecondes(int newSecondes) {
         if (secondes == newSecondes)
@@ -99,17 +86,10 @@ public class DummyTimeServiceImpl
         int oldValue = secondes;
         secondes = newSecondes;
 
-        secondesChanged(oldValue, secondes);
-    }
-
-    private void secondesChanged(int oldValue, int secondes) {
-
-       for (TimerChangeListener l : listeners) {
-           l.propertyChange(TimerChangeListener.SECONDE_PROP,
+        // informer les listeners avec PropertyChangeSupport !
+        propertyChangeSupport.firePropertyChange(TimerChangeListener.SECONDE_PROP,
                    oldValue, secondes);
-       }
     }
-
 
     public void setMinutes(int newMinutes) {
         if (minutes == newMinutes)
@@ -118,14 +98,9 @@ public class DummyTimeServiceImpl
         int oldValue = minutes;
         minutes = newMinutes;
 
-        minutesChanged (oldValue, minutes) ;
-    }
-
-    private void minutesChanged(int oldValue, int minutes) {
-       for (TimerChangeListener l : listeners) {
-           l.propertyChange(TimerChangeListener.MINUTE_PROP,
+        // informer les listeners avec PropertyChangeSupport !
+        propertyChangeSupport.firePropertyChange(TimerChangeListener.MINUTE_PROP,
                    oldValue, minutes);
-       }
     }
 
     public void setHeures(int newHeures) {
@@ -135,16 +110,10 @@ public class DummyTimeServiceImpl
         int oldValue = heures;
         heures = newHeures;
 
-        heuresChanged (oldValue, heures) ;
-    }
-
-    private void heuresChanged(int oldValue, int heures) {
-       for (TimerChangeListener l : listeners) {
-           l.propertyChange(TimerChangeListener.HEURE_PROP,
+        // informer les listeners avec PropertyChangeSupport !
+        propertyChangeSupport.firePropertyChange(TimerChangeListener.HEURE_PROP,
                    oldValue, heures);
-       }
     }
-
 
     @Override
     public int getDixiemeDeSeconde() {
